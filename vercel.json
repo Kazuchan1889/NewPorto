@@ -6,8 +6,7 @@
       "use": "@vercel/node"
     },
     {
-      "src": "package.json",
-      "use": "@vercel/vite"
+      
     }
   ],
   "rewrites": [
