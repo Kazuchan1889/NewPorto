@@ -1,9 +1,7 @@
-'use strict';
-
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const db = require('../models/index.cjs');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import db from '../models/index.cjs';
 
 dotenv.config();
 
@@ -366,10 +364,17 @@ app.delete('/api/messages/:id', async (req, res) => {
 // ──────────────────────────────────────────────────────
 // Vercel Serverless Export
 // ──────────────────────────────────────────────────────
-module.exports = app;
+export default app;
 
 // Local Development Server
-if (require.main === module) {
+import { fileURLToPath } from 'url';
+const isMain = process.argv[1] && (
+  process.argv[1] === fileURLToPath(import.meta.url) ||
+  process.argv[1].endsWith('api/index.js') ||
+  process.argv[1].endsWith('api\\index.js')
+);
+
+if (isMain) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`\n🚀 Backend server running on http://localhost:${PORT}`);
