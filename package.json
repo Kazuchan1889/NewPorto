@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"vite\" \"nodemon api/index.cjs\"",
     "server": "node api/index.cjs",
-    "build": "vite build",
+    "build": "npm run migrate && vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "migrate": "npx sequelize-cli db:migrate",

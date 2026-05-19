@@ -23,7 +23,15 @@ module.exports = (sequelize, DataTypes) => {
     skillsDescription: DataTypes.TEXT,
     techBadges: DataTypes.ARRAY(DataTypes.STRING),
     projectsHeading: DataTypes.STRING,
-    projectsDescription: DataTypes.TEXT
+    projectsDescription: DataTypes.TEXT,
+    contactHeading: DataTypes.STRING,
+    contactDescription: DataTypes.TEXT,
+    contactEmail: DataTypes.STRING,
+    contactLocation: DataTypes.STRING,
+    contactPhone: DataTypes.STRING,
+    contactGithub: DataTypes.STRING,
+    contactLinkedin: DataTypes.STRING,
+    contactTwitter: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Portfolio',

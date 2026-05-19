@@ -258,6 +258,57 @@ app.post('/api/projects', async (req, res) => {
 });
 
 // ──────────────────────────────────────────────────────
+// CONTACT INFO
+// ──────────────────────────────────────────────────────
+app.get('/api/contact-info', async (req, res) => {
+  try {
+    const portfolio = await db.Portfolio.findOne();
+    res.json({
+      heading: portfolio?.contactHeading || "Let's Work Together",
+      description: portfolio?.contactDescription || "Have a project in mind? Send me a message and let's discuss how I can help bring your vision to life.",
+      email: portfolio?.contactEmail || "hello@yourname.dev",
+      location: portfolio?.contactLocation || "Jakarta, Indonesia",
+      phone: portfolio?.contactPhone || "+62 812-3456-7890",
+      github: portfolio?.contactGithub || "https://github.com",
+      linkedin: portfolio?.contactLinkedin || "https://linkedin.com",
+      twitter: portfolio?.contactTwitter || "https://twitter.com"
+    });
+  } catch (error) {
+    console.error('[GET /api/contact-info]', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/contact-info', async (req, res) => {
+  try {
+    const { heading, description, email, location, phone, github, linkedin, twitter } = req.body;
+    let portfolio = await db.Portfolio.findOne();
+
+    const data = {
+      contactHeading: heading,
+      contactDescription: description,
+      contactEmail: email,
+      contactLocation: location,
+      contactPhone: phone,
+      contactGithub: github,
+      contactLinkedin: linkedin,
+      contactTwitter: twitter
+    };
+
+    if (portfolio) {
+      await portfolio.update(data);
+    } else {
+      await db.Portfolio.create(data);
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('[POST /api/contact-info]', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ──────────────────────────────────────────────────────
 // CONTACT MESSAGES
 // ──────────────────────────────────────────────────────
 app.get('/api/messages', async (req, res) => {

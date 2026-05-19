@@ -1,22 +1,32 @@
 import { useEffect, useRef, useState } from 'react'
 import { Mail, MapPin, Phone, Send, CheckCircle, Loader, Code2, Link, Share2 } from 'lucide-react'
 
-const contacts = [
-  { icon: Mail,   label: 'Email',    value: 'hello@yourname.dev',  href: 'mailto:hello@yourname.dev' },
-  { icon: MapPin, label: 'Location', value: 'Jakarta, Indonesia',  href: null },
-  { icon: Phone,  label: 'Phone',    value: '+62 812-3456-7890',   href: 'tel:+6281234567890' },
-]
-
-const socials = [
-  { icon: Code2,  label: 'GitHub',   href: 'https://github.com' },
-  { icon: Link,   label: 'LinkedIn', href: 'https://linkedin.com' },
-  { icon: Share2, label: 'Twitter',  href: 'https://twitter.com' },
-]
+// Contacts & Socials will be populated dynamically from state
 
 export default function Contact() {
   const ref = useRef(null)
   const [form, setForm]     = useState({ name: '', email: '', subject: '', message: '' })
   const [status, setStatus] = useState('idle') // idle | sending | done
+  const [contactInfo, setContactInfo] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/contact-info')
+      .then(res => res.json())
+      .then(data => setContactInfo(data))
+      .catch(err => console.error(err))
+  }, [])
+
+  const contacts = [
+    { icon: Mail,   label: 'Email',    value: contactInfo?.email || 'hello@yourname.dev',  href: contactInfo?.email ? `mailto:${contactInfo.email}` : null },
+    { icon: MapPin, label: 'Location', value: contactInfo?.location || 'Jakarta, Indonesia',  href: null },
+    { icon: Phone,  label: 'Phone',    value: contactInfo?.phone || '+62 812-3456-7890',   href: contactInfo?.phone ? `tel:${contactInfo.phone.replace(/[^0-9+]/g, '')}` : null },
+  ]
+
+  const socials = [
+    { icon: Code2,  label: 'GitHub',   href: contactInfo?.github || 'https://github.com' },
+    { icon: Link,   label: 'LinkedIn', href: contactInfo?.linkedin || 'https://linkedin.com' },
+    { icon: Share2, label: 'Twitter',  href: contactInfo?.twitter || 'https://twitter.com' },
+  ]
 
   const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
 
@@ -63,10 +73,18 @@ export default function Contact() {
             <div className="h-px w-12 bg-gradient-to-r from-primary-500 to-transparent" />
           </div>
           <h2 className="section-title" style={{ color: 'var(--text-primary)' }}>
-            Let's <span className="gradient-text">Work Together</span>
+            {contactInfo?.heading ? (
+              // Just split words and make the last one gradient for aesthetics
+              <>
+                {contactInfo.heading.split(' ').slice(0, -1).join(' ')}{' '}
+                <span className="gradient-text">{contactInfo.heading.split(' ').slice(-1).join(' ')}</span>
+              </>
+            ) : (
+              <>Let's <span className="gradient-text">Work Together</span></>
+            )}
           </h2>
           <p className="max-w-xl mx-auto" style={{ color: 'var(--text-muted)' }}>
-            Have a project in mind? Send me a message and let's discuss how I can help bring your vision to life.
+            {contactInfo?.description || "Have a project in mind? Send me a message and let's discuss how I can help bring your vision to life."}
           </p>
         </div>
 

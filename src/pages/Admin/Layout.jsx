@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, User, Code2, Briefcase, Mail, LogOut, Moon, Sun } from 'lucide-react'
+import { LayoutDashboard, User, Code2, Briefcase, Mail, LogOut, Moon, Sun, Settings } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
 
 const menuItems = [
@@ -8,6 +8,7 @@ const menuItems = [
   { label: 'About', path: '/admin/about', icon: User },
   { label: 'Skills', path: '/admin/skills', icon: Code2 },
   { label: 'Projects', path: '/admin/projects', icon: Briefcase },
+  { label: 'Contact Settings', path: '/admin/contact-settings', icon: Settings },
   { label: 'Contact Messages', path: '/admin/contact', icon: Mail },
 ]
 

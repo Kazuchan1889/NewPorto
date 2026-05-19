@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.cjs": {
+      "includeFiles": ["models/**", "config/**"]
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.cjs"
+    }
+  ]
+}

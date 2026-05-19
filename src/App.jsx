@@ -8,6 +8,7 @@ import AboutContent from './pages/Admin/AboutContent'
 import SkillsContent from './pages/Admin/SkillsContent'
 import ProjectsContent from './pages/Admin/ProjectsContent'
 import ContactMessages from './pages/Admin/ContactMessages'
+import ContactSettings from './pages/Admin/ContactSettings'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="skills" element={<SkillsContent />} />
             <Route path="projects" element={<ProjectsContent />} />
             <Route path="contact" element={<ContactMessages />} />
+            <Route path="contact-settings" element={<ContactSettings />} />
           </Route>
         </Routes>
       </BrowserRouter>
