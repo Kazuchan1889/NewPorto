@@ -129,6 +129,7 @@ export default function Portfolio() {
       {showPreloader && (
         <Preloader
           progress={progress}
+          avatarUrl={heroData?.avatarUrl}
           onComplete={() => setShowPreloader(false)}
         />
       )}

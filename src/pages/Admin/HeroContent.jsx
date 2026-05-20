@@ -66,6 +66,13 @@ export default function HeroContent() {
   const handleImageChange = (e) => {
     const file = e.target.files?.[0]
     if (file) {
+      // Validate that file type is PNG or JPG/JPEG
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg']
+      if (!allowedTypes.includes(file.type)) {
+        alert("Only JPG and PNG images are allowed.")
+        return
+      }
+
       if (file.size > 2 * 1024 * 1024) {
         alert("Image is too large. Please upload an image smaller than 2MB.");
         return;
@@ -151,14 +158,14 @@ export default function HeroContent() {
           <div className="space-y-3 flex-1 text-center sm:text-left">
             <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Upload Profile Picture</h3>
             <p className="text-sm leading-relaxed max-w-sm mx-auto sm:mx-0" style={{ color: 'var(--text-muted)' }}>
-              Recommended size: 500x500px. Supports PNG, JPG, or WebP. Transparent backgrounds look best on dark mode.
+              Recommended size: 500x500px. Supports PNG and JPG/JPEG only. Transparent backgrounds look best on dark mode.
             </p>
             <div className="pt-2">
               <input 
                 type="file" 
                 ref={fileInputRef}
                 onChange={handleImageChange}
-                accept="image/*"
+                accept="image/png, image/jpeg, image/jpg"
                 className="hidden" 
                 id="avatar-upload"
               />
