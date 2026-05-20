@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     freelance: DataTypes.STRING,
     statusBadge: DataTypes.STRING,
     avatarUrl: DataTypes.TEXT,
+    logoUrl: DataTypes.TEXT,
     resumeUrl: DataTypes.TEXT,
     aboutHeading: DataTypes.STRING,
     aboutBio1: DataTypes.TEXT,

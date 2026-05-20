@@ -83,8 +83,8 @@ export default function Navbar() {
         {/* ── Logo ─────────────────────────────────────────── */}
         <button onClick={() => handleNavClick('home')} className="flex items-center gap-2.5 group">
           <div className="w-9 h-9 rounded-xl overflow-hidden bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center font-bold text-white text-sm group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-primary-500/30">
-            {heroData?.avatarUrl ? (
-              <img src={heroData.avatarUrl} alt="Logo" className="w-full h-full object-cover" />
+            {heroData?.logoUrl ? (
+              <img src={heroData.logoUrl} alt="Logo" className="w-full h-full object-cover" />
             ) : (
               initials
             )}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-export default function Preloader({ progress, avatarUrl, onComplete }) {
+export default function Preloader({ progress, logoUrl, onComplete }) {
   const [fade, setFade] = useState(false)
   const [statusText, setStatusText] = useState('Initializing...')
   
@@ -170,9 +170,9 @@ export default function Preloader({ progress, avatarUrl, onComplete }) {
             {/* Shimmer light bar across logo */}
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
             
-            {avatarUrl ? (
+            {logoUrl ? (
               <img 
-                src={avatarUrl} 
+                src={logoUrl} 
                 alt="Logo" 
                 className="w-full h-full object-cover relative z-10 transition-transform duration-300 group-hover:scale-115"
               />

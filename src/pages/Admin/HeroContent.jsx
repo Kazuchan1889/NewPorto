@@ -5,6 +5,7 @@ export default function HeroContent() {
   const [isSaving, setIsSaving] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const fileInputRef = useRef(null)
+  const logoInputRef = useRef(null)
   
   const [formData, setFormData] = useState({
     firstName: 'Your',
@@ -14,6 +15,7 @@ export default function HeroContent() {
     freelanceBadge: 'Available for freelance work',
     statusBadge: 'Open to work 🚀',
     avatar: null,
+    logo: null,
     stats: [
       { id: 1, label: 'Years Exp.', value: '3+' },
       { id: 2, label: 'Projects', value: '20+' },
@@ -38,6 +40,7 @@ export default function HeroContent() {
             freelanceBadge: data.freelance || prev.freelanceBadge,
             statusBadge: data.statusBadge || prev.statusBadge,
             avatar: data.avatarUrl || null,
+            logo: data.logoUrl || null,
             stats: data.stats && data.stats.length > 0
               ? data.stats.map(s => ({ id: s.id, label: s.label, value: s.value }))
               : prev.stats
@@ -90,6 +93,33 @@ export default function HeroContent() {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
+  const handleLogoChange = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate that file type is PNG or JPG/JPEG
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg']
+      if (!allowedTypes.includes(file.type)) {
+        alert("Only JPG and PNG images are allowed.")
+        return
+      }
+
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Logo image is too large. Please upload an image smaller than 2MB.");
+        return;
+      }
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, logo: reader.result }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const removeLogo = () => {
+    setFormData(prev => ({ ...prev, logo: null }))
+    if (logoInputRef.current) logoInputRef.current.value = ''
+  }
+
   const handleSave = async () => {
     setIsSaving(true)
     try {
@@ -100,6 +130,7 @@ export default function HeroContent() {
         freelance: formData.freelanceBadge,
         statusBadge: formData.statusBadge,
         avatarUrl: formData.avatar,
+        logoUrl: formData.logo,
         stats: formData.stats
       }
       
@@ -171,6 +202,62 @@ export default function HeroContent() {
               />
               <label 
                 htmlFor="avatar-upload"
+                className="btn-outline inline-flex items-center gap-2 px-5 py-2.5 text-sm cursor-pointer"
+              >
+                <Upload size={16} />
+                Choose File
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Website Icon / Logo */}
+      <div className="card rounded-2xl p-6 border-subtle space-y-6">
+        <div className="flex items-center gap-2 mb-4">
+          <ImageIcon size={18} className="text-primary-500" />
+          <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Website Icon / Logo</h2>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row items-center gap-8">
+          {/* Logo Preview */}
+          <div className="relative w-40 h-40 rounded-2xl border-2 border-dashed flex-shrink-0 flex items-center justify-center overflow-hidden transition-all duration-300" 
+               style={{ borderColor: formData.logo ? 'transparent' : 'var(--border-brand)', background: 'var(--bg-elevated)' }}>
+            {formData.logo ? (
+              <>
+                <img src={formData.logo} alt="Logo Preview" className="w-full h-full object-cover" />
+                <button 
+                  onClick={removeLogo}
+                  className="absolute top-2 right-2 w-8 h-8 bg-black/50 hover:bg-red-500 text-white rounded-full flex items-center justify-center transition-colors backdrop-blur-md"
+                >
+                  <X size={14} />
+                </button>
+              </>
+            ) : (
+              <div className="text-center" style={{ color: 'var(--text-muted)' }}>
+                <Upload size={24} className="mx-auto mb-2 opacity-50" />
+                <span className="text-xs font-medium">No Logo</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Upload Controls */}
+          <div className="space-y-3 flex-1 text-center sm:text-left">
+            <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Upload Website Logo</h3>
+            <p className="text-sm leading-relaxed max-w-sm mx-auto sm:mx-0" style={{ color: 'var(--text-muted)' }}>
+              This icon will be used on the preloader screen and navigation bar. Recommended size: 200x200px. Supports PNG and JPG/JPEG only.
+            </p>
+            <div className="pt-2">
+              <input 
+                type="file" 
+                ref={logoInputRef}
+                onChange={handleLogoChange}
+                accept="image/png, image/jpeg, image/jpg"
+                className="hidden" 
+                id="logo-upload"
+              />
+              <label 
+                htmlFor="logo-upload"
                 className="btn-outline inline-flex items-center gap-2 px-5 py-2.5 text-sm cursor-pointer"
               >
                 <Upload size={16} />
