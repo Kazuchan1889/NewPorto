@@ -7,10 +7,20 @@ const config = require('../config/config.cjs')[env];
 const db = {};
 
 let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
+const dbUrl = config.use_env_variable ? process.env[config.use_env_variable] : null;
+
+if (dbUrl) {
+  sequelize = new Sequelize(dbUrl, config);
+} else if (!config.use_env_variable && config.database) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
+} else {
+  console.error(`[Sequelize Initialization Error] Environment variable '${config.use_env_variable || 'DATABASE_URL'}' is not defined.`);
+  // Initialize with a dummy connection string to prevent startup crash.
+  // It will fail gracefully at runtime when a query is executed.
+  sequelize = new Sequelize('postgres://localhost:5432/dummy_db', {
+    ...config,
+    dialectModule: require('pg')
+  });
 }
 
 // Statically require all models for serverless environment compatibility (Vercel)
