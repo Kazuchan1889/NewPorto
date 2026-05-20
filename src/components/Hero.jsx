@@ -15,17 +15,9 @@ const socials = [
 //   { value: '15+', label: 'Clients' },
 // ]
 
-export default function Hero() {
+export default function Hero({ heroData }) {
   const canvasRef = useRef(null)
   const { isDark } = useTheme()
-  const [heroData, setHeroData] = useState(null)
-
-  useEffect(() => {
-    fetch('/api/hero')
-      .then(res => res.json())
-      .then(data => setHeroData(data))
-      .catch(err => console.error(err))
-  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current

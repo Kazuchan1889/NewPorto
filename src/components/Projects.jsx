@@ -128,17 +128,9 @@ function ProjectCard({ project, index }) {
   )
 }
 
-export default function Projects() {
+export default function Projects({ projectsData }) {
   const ref = useRef(null)
-  const [projectsData, setProjectsData] = useState(null)
   const [activeFilter, setActiveFilter] = useState('All')
-
-  useEffect(() => {
-    fetch('/api/projects')
-      .then(res => res.json())
-      .then(data => setProjectsData(data))
-      .catch(err => console.error(err))
-  }, [])
 
   const list = projectsData?.projects?.length > 0 ? projectsData.projects : defaultProjects
   const filters = ['All', ...new Set(list.map(p => p.category).filter(Boolean))]

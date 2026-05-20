@@ -3,18 +3,10 @@ import { Mail, MapPin, Phone, Send, CheckCircle, Loader, Code2, Link, Share2 } f
 
 // Contacts & Socials will be populated dynamically from state
 
-export default function Contact() {
+export default function Contact({ contactInfo }) {
   const ref = useRef(null)
   const [form, setForm]     = useState({ name: '', email: '', subject: '', message: '' })
   const [status, setStatus] = useState('idle') // idle | sending | done
-  const [contactInfo, setContactInfo] = useState(null)
-
-  useEffect(() => {
-    fetch('/api/contact-info')
-      .then(res => res.json())
-      .then(data => setContactInfo(data))
-      .catch(err => console.error(err))
-  }, [])
 
   const contacts = [
     { icon: Mail,   label: 'Email',    value: contactInfo?.email || 'hello@yourname.dev',  href: contactInfo?.email ? `mailto:${contactInfo.email}` : null },

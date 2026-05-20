@@ -76,16 +76,8 @@ function SkillBar({ name, level, barColor, delay }) {
   )
 }
 
-export default function Skills() {
+export default function Skills({ skillsData }) {
   const ref = useRef(null)
-  const [skillsData, setSkillsData] = useState(null)
-
-  useEffect(() => {
-    fetch('/api/skills')
-      .then(res => res.json())
-      .then(data => setSkillsData(data))
-      .catch(err => console.error(err))
-  }, [])
 
   useEffect(() => {
     const observer = new IntersectionObserver(

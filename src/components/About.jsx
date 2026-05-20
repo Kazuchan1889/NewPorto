@@ -16,16 +16,8 @@ const defaultTimeline = [
   { year: '2021', title: 'CS Degree Graduated',        company: 'State University' },
 ]
 
-export default function About() {
+export default function About({ aboutData }) {
   const ref = useRef(null)
-  const [aboutData, setAboutData] = useState(null)
-
-  useEffect(() => {
-    fetch('/api/about')
-      .then(res => res.json())
-      .then(data => setAboutData(data))
-      .catch(err => console.error(err))
-  }, [])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
