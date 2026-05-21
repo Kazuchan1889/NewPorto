@@ -16,6 +16,9 @@ export default function HeroContent() {
     statusBadge: 'Open to work 🚀',
     avatar: null,
     logo: null,
+    avatarScale: 1.0,
+    avatarX: 0,
+    avatarY: 0,
     stats: [
       { id: 1, label: 'Years Exp.', value: '3+' },
       { id: 2, label: 'Projects', value: '20+' },
@@ -41,6 +44,9 @@ export default function HeroContent() {
             statusBadge: data.statusBadge || prev.statusBadge,
             avatar: data.avatarUrl || null,
             logo: data.logoUrl || null,
+            avatarScale: data.avatarScale ?? 1.0,
+            avatarX: data.avatarX ?? 0,
+            avatarY: data.avatarY ?? 0,
             stats: data.stats && data.stats.length > 0
               ? data.stats.map(s => ({ id: s.id, label: s.label, value: s.value }))
               : prev.stats
@@ -89,7 +95,7 @@ export default function HeroContent() {
   }
 
   const removeImage = () => {
-    setFormData(prev => ({ ...prev, avatar: null }))
+    setFormData(prev => ({ ...prev, avatar: null, avatarScale: 1.0, avatarX: 0, avatarY: 0 }))
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -130,6 +136,9 @@ export default function HeroContent() {
         freelance: formData.freelanceBadge,
         statusBadge: formData.statusBadge,
         avatarUrl: formData.avatar,
+        avatarScale: formData.avatarScale ?? 1.0,
+        avatarX: formData.avatarX ?? 0,
+        avatarY: formData.avatarY ?? 0,
         logoUrl: formData.logo,
         stats: formData.stats
       }
@@ -169,7 +178,14 @@ export default function HeroContent() {
                style={{ borderColor: formData.avatar ? 'transparent' : 'var(--border-brand)', background: 'var(--bg-elevated)' }}>
             {formData.avatar ? (
               <>
-                <img src={formData.avatar} alt="Avatar Preview" className="w-full h-full object-cover" />
+                <img 
+                  src={formData.avatar} 
+                  alt="Avatar Preview" 
+                  className="w-full h-full object-cover origin-center" 
+                  style={{
+                    transform: `scale(${formData.avatarScale ?? 1.0}) translate(${formData.avatarX ?? 0}px, ${formData.avatarY ?? 0}px)`
+                  }}
+                />
                 <button 
                   onClick={removeImage}
                   className="absolute top-2 right-2 w-8 h-8 bg-black/50 hover:bg-red-500 text-white rounded-full flex items-center justify-center transition-colors backdrop-blur-md"
@@ -210,6 +226,73 @@ export default function HeroContent() {
             </div>
           </div>
         </div>
+
+        {formData.avatar && (
+          <div className="pt-6 border-t border-subtle space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Position & Zoom Adjustments</h3>
+              <button 
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, avatarScale: 1.0, avatarX: 0, avatarY: 0 }))}
+                className="text-xs font-semibold text-primary-400 hover:text-primary-300 transition-colors"
+              >
+                Reset Adjustments
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Zoom Slider */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                  <span>Zoom / Scale</span>
+                  <span className="font-mono text-primary-400">{(formData.avatarScale ?? 1.0).toFixed(2)}x</span>
+                </div>
+                <input 
+                  type="range"
+                  min="1.0"
+                  max="4.0"
+                  step="0.05"
+                  value={formData.avatarScale ?? 1.0}
+                  onChange={(e) => setFormData(prev => ({ ...prev, avatarScale: parseFloat(e.target.value) }))}
+                  className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                />
+              </div>
+
+              {/* X Shift Slider */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                  <span>Horizontal (X Shift)</span>
+                  <span className="font-mono text-primary-400">{formData.avatarX ?? 0}px</span>
+                </div>
+                <input 
+                  type="range"
+                  min="-200"
+                  max="200"
+                  step="1"
+                  value={formData.avatarX ?? 0}
+                  onChange={(e) => setFormData(prev => ({ ...prev, avatarX: parseInt(e.target.value) }))}
+                  className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                />
+              </div>
+
+              {/* Y Shift Slider */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                  <span>Vertical (Y Shift)</span>
+                  <span className="font-mono text-primary-400">{formData.avatarY ?? 0}px</span>
+                </div>
+                <input 
+                  type="range"
+                  min="-200"
+                  max="200"
+                  step="1"
+                  value={formData.avatarY ?? 0}
+                  onChange={(e) => setFormData(prev => ({ ...prev, avatarY: parseInt(e.target.value) }))}
+                  className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Website Icon / Logo */}

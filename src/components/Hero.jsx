@@ -208,7 +208,14 @@ export default function Hero({ heroData }) {
               <div className="relative w-60 h-60 md:w-72 md:h-72 rounded-full overflow-hidden border-4 shadow-2xl animate-float"
                    style={{ borderColor: 'var(--bg-base)' }}>
                 {heroData?.avatarUrl ? (
-                  <img src={heroData.avatarUrl} alt="Hero Avatar" className="w-full h-full object-cover" />
+                  <img 
+                    src={heroData.avatarUrl} 
+                    alt="Hero Avatar" 
+                    className="w-full h-full object-cover origin-center" 
+                    style={{
+                      transform: `scale(${heroData.avatarScale ?? 1.0}) translate(${heroData.avatarX ?? 0}px, ${heroData.avatarY ?? 0}px)`
+                    }}
+                  />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-primary-700 via-primary-500 to-accent-500 flex items-center justify-center">
                     <span className="text-8xl font-black text-white/25">
