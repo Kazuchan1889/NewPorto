@@ -18,6 +18,7 @@ const socials = [
 export default function Hero({ heroData }) {
   const canvasRef = useRef(null)
   const { isDark } = useTheme()
+  const [imageAR, setImageAR] = useState(1.0)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -205,14 +206,22 @@ export default function Hero({ heroData }) {
               <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary-500 via-accent-500 to-primary-400 animate-spin-slow opacity-70" style={{ padding: '3px' }}>
                 <div className="w-full h-full rounded-full" style={{ background: 'var(--bg-base)' }} />
               </div>
-              <div className="relative w-60 h-60 md:w-72 md:h-72 rounded-full overflow-hidden border-4 shadow-2xl animate-float"
+              <div className="relative w-60 h-60 md:w-72 md:h-72 rounded-full overflow-hidden border-4 shadow-2xl animate-float flex items-center justify-center"
                    style={{ borderColor: 'var(--bg-base)' }}>
                 {heroData?.avatarUrl ? (
                   <img 
                     src={heroData.avatarUrl} 
                     alt="Hero Avatar" 
-                    className="w-full h-full object-cover origin-center" 
+                    className="origin-center flex-shrink-0" 
+                    onLoad={(e) => {
+                      const { naturalWidth, naturalHeight } = e.target;
+                      if (naturalWidth && naturalHeight) {
+                        setImageAR(naturalWidth / naturalHeight);
+                      }
+                    }}
                     style={{
+                      width: imageAR >= 1.0 ? 'auto' : '100%',
+                      height: imageAR >= 1.0 ? '100%' : 'auto',
                       transform: `scale(${heroData.avatarScale ?? 1.0}) translate(${heroData.avatarX ?? 0}%, ${heroData.avatarY ?? 0}%)`
                     }}
                   />

@@ -120,7 +120,25 @@ export default function About({ aboutData }) {
           <h3 className="text-2xl font-bold text-center mb-10" style={{ color: 'var(--text-primary)' }}>
             My Journey
           </h3>
-          <div className="relative">
+          {/* Mobile timeline (< md) */}
+          <div className="relative md:hidden pl-8 space-y-8">
+            <div className="absolute left-[15px] top-2 bottom-2 w-px"
+                 style={{ background: 'linear-gradient(to bottom, rgba(97,114,240,0.5), transparent)' }} />
+            {(aboutData?.timeline?.length > 0 ? aboutData.timeline : defaultTimeline).map((item) => (
+              <div key={item.id || item.year} className="relative flex gap-6">
+                <div className="absolute -left-[25px] top-1.5 z-10 w-4 h-4 rounded-full bg-primary-500 border-2 flex-shrink-0 glow"
+                     style={{ borderColor: 'var(--bg-base)' }} />
+                <div className="card rounded-xl p-4 border-subtle hover:border-brand transition-all duration-300 text-left w-full">
+                  <p className="font-mono text-sm mb-1" style={{ color: 'var(--primary-400)' }}>{item.year}</p>
+                  <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{item.title || item.role}</p>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{item.company}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop timeline (>= md) */}
+          <div className="relative hidden md:block">
             <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px"
                  style={{ background: 'linear-gradient(to bottom, rgba(97,114,240,0.5), transparent)' }} />
             {(aboutData?.timeline?.length > 0 ? aboutData.timeline : defaultTimeline).map((item, i) => {
@@ -128,7 +146,7 @@ export default function About({ aboutData }) {
               return (
                 <div key={item.id || item.year} className={`flex items-center gap-6 mb-8 ${side === 'right' ? 'flex-row-reverse' : ''}`}>
                   <div className={`flex-1 ${side === 'left' ? 'text-right' : 'text-left'}`}>
-                    <div className={`card rounded-xl p-4 border-subtle inline-block hover:border-brand transition-all duration-300 text-left ${side === 'left' ? 'md:mr-8' : 'md:ml-8'}`}>
+                    <div className={`card rounded-xl p-4 border-subtle inline-block hover:border-brand transition-all duration-300 text-left ${side === 'left' ? 'mr-8' : 'ml-8'}`}>
                       <p className="font-mono text-sm mb-1" style={{ color: 'var(--primary-400)' }}>{item.year}</p>
                       <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{item.title || item.role}</p>
                       <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{item.company}</p>

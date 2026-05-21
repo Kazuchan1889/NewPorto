@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { Save, AlertCircle, Sparkles, Upload, X, Image as ImageIcon } from 'lucide-react'
 
-const getClampedCoords = (scale, x, y) => {
-  const maxOffset = Math.max(0, 50 - 37.5 / scale);
+const getClampedCoords = (scale, x, y, ar) => {
+  const W = ar >= 1.0 ? 256 * ar : 256;
+  const H = ar >= 1.0 ? 256 : 256 / ar;
+  const maxX = Math.max(0, 50 - 9600 / (scale * W));
+  const maxY = Math.max(0, 50 - 9600 / (scale * H));
   return {
-    x: Math.min(Math.max(x, -maxOffset), maxOffset),
-    y: Math.min(Math.max(y, -maxOffset), maxOffset)
+    x: Math.min(Math.max(x, -maxX), maxX),
+    y: Math.min(Math.max(y, -maxY), maxY)
   };
 };
 
@@ -39,6 +42,28 @@ export default function HeroContent() {
   const [tempScale, setTempScale] = useState(1.0)
   const [tempX, setTempX] = useState(0)
   const [tempY, setTempY] = useState(0)
+  const [imageAR, setImageAR] = useState(1.0)
+  const [previewAR, setPreviewAR] = useState(1.0)
+
+  const handleImageLoad = (e) => {
+    const { naturalWidth, naturalHeight } = e.target;
+    if (naturalWidth && naturalHeight) {
+      const ar = naturalWidth / naturalHeight;
+      setImageAR(ar);
+      
+      // Clamp initial offsets with the loaded aspect ratio
+      setTempX(prevX => {
+        const W = ar >= 1.0 ? 256 * ar : 256;
+        const maxX = Math.max(0, 50 - 9600 / (tempScale * W));
+        return Math.min(Math.max(prevX, -maxX), maxX);
+      });
+      setTempY(prevY => {
+        const H = ar >= 1.0 ? 256 : 256 / ar;
+        const maxY = Math.max(0, 50 - 9600 / (tempScale * H));
+        return Math.min(Math.max(prevY, -maxY), maxY);
+      });
+    }
+  };
 
   const pointersRef = useRef({})
   const isDraggingRef = useRef(false)
@@ -82,23 +107,26 @@ export default function HeroContent() {
     pointersRef.current[e.pointerId] = { clientX: e.clientX, clientY: e.clientY };
     const keys = Object.keys(pointersRef.current);
     
+    const W = imageAR >= 1.0 ? 256 * imageAR : 256;
+    const H = imageAR >= 1.0 ? 256 : 256 / imageAR;
+    
     if (keys.length === 1 && isDraggingRef.current) {
       const dx = e.clientX - dragStartRef.current.x;
       const dy = e.clientY - dragStartRef.current.y;
       
-      const deltaX = dx / (2.56 * tempScale);
-      const deltaY = dy / (2.56 * tempScale);
+      const deltaX = dx * 100 / (tempScale * W);
+      const deltaY = dy * 100 / (tempScale * H);
       
       const newX = offsetStartRef.current.x + deltaX;
       const newY = offsetStartRef.current.y + deltaY;
       
-      const clamped = getClampedCoords(tempScale, newX, newY);
+      const clamped = getClampedCoords(tempScale, newX, newY, imageAR);
       setTempX(clamped.x);
       setTempY(clamped.y);
       
       // Prevent sticky boundary / drift
-      const dxEffective = (clamped.x - offsetStartRef.current.x) * (2.56 * tempScale);
-      const dyEffective = (clamped.y - offsetStartRef.current.y) * (2.56 * tempScale);
+      const dxEffective = (clamped.x - offsetStartRef.current.x) * (tempScale * W / 100);
+      const dyEffective = (clamped.y - offsetStartRef.current.y) * (tempScale * H / 100);
       dragStartRef.current = {
         x: dragStartRef.current.x + (dx - dxEffective),
         y: dragStartRef.current.y + (dy - dyEffective)
@@ -120,19 +148,19 @@ export default function HeroContent() {
       
       const dx = midX - initialMidpointRef.current.x;
       const dy = midY - initialMidpointRef.current.y;
-      const deltaX = dx / (2.56 * newScale);
-      const deltaY = dy / (2.56 * newScale);
+      const deltaX = dx * 100 / (newScale * W);
+      const deltaY = dy * 100 / (newScale * H);
       
       const newX = offsetStartRef.current.x + deltaX;
       const newY = offsetStartRef.current.y + deltaY;
       
-      const clamped = getClampedCoords(newScale, newX, newY);
+      const clamped = getClampedCoords(newScale, newX, newY, imageAR);
       setTempX(clamped.x);
       setTempY(clamped.y);
       
       // Prevent sticky boundary / drift
-      const dxEffective = (clamped.x - offsetStartRef.current.x) * (2.56 * newScale);
-      const dyEffective = (clamped.y - offsetStartRef.current.y) * (2.56 * newScale);
+      const dxEffective = (clamped.x - offsetStartRef.current.x) * (newScale * W / 100);
+      const dyEffective = (clamped.y - offsetStartRef.current.y) * (newScale * H / 100);
       initialMidpointRef.current = {
         x: initialMidpointRef.current.x + (dx - dxEffective),
         y: initialMidpointRef.current.y + (dy - dyEffective)
@@ -171,13 +199,16 @@ export default function HeroContent() {
       setTempScale(prev => {
         const newScale = Math.min(Math.max(prev + delta, 1.0), 5.0);
         
+        const W = imageAR >= 1.0 ? 256 * imageAR : 256;
+        const H = imageAR >= 1.0 ? 256 : 256 / imageAR;
+        
         setTempX(prevX => {
-          const maxOffset = Math.max(0, 50 - 37.5 / newScale);
-          return Math.min(Math.max(prevX, -maxOffset), maxOffset);
+          const maxX = Math.max(0, 50 - 9600 / (newScale * W));
+          return Math.min(Math.max(prevX, -maxX), maxX);
         });
         setTempY(prevY => {
-          const maxOffset = Math.max(0, 50 - 37.5 / newScale);
-          return Math.min(Math.max(prevY, -maxOffset), maxOffset);
+          const maxY = Math.max(0, 50 - 9600 / (newScale * H));
+          return Math.min(Math.max(prevY, -maxY), maxY);
         });
         
         return newScale;
@@ -254,11 +285,9 @@ export default function HeroContent() {
       const reader = new FileReader()
       reader.onloadend = () => {
         setTempAvatar(reader.result)
-        const scale = formData.avatarScale ?? 1.0;
-        const clamped = getClampedCoords(scale, formData.avatarX ?? 0, formData.avatarY ?? 0);
-        setTempScale(scale)
-        setTempX(clamped.x)
-        setTempY(clamped.y)
+        setTempScale(formData.avatarScale ?? 1.0)
+        setTempX(formData.avatarX ?? 0)
+        setTempY(formData.avatarY ?? 0)
         setIsCropModalOpen(true)
       }
       reader.readAsDataURL(file)
@@ -352,8 +381,16 @@ export default function HeroContent() {
                 <img 
                   src={formData.avatar} 
                   alt="Avatar Preview" 
-                  className="w-full h-full object-cover origin-center" 
+                  className="origin-center flex-shrink-0" 
+                  onLoad={(e) => {
+                    const { naturalWidth, naturalHeight } = e.target;
+                    if (naturalWidth && naturalHeight) {
+                      setPreviewAR(naturalWidth / naturalHeight);
+                    }
+                  }}
                   style={{
+                    width: previewAR >= 1.0 ? 'auto' : '100%',
+                    height: previewAR >= 1.0 ? '100%' : 'auto',
                     transform: `scale(${formData.avatarScale ?? 1.0}) translate(${formData.avatarX ?? 0}%, ${formData.avatarY ?? 0}%)`
                   }}
                 />
@@ -400,11 +437,9 @@ export default function HeroContent() {
                   type="button"
                   onClick={() => {
                     setTempAvatar(formData.avatar)
-                    const scale = formData.avatarScale ?? 1.0;
-                    const clamped = getClampedCoords(scale, formData.avatarX ?? 0, formData.avatarY ?? 0);
-                    setTempScale(scale)
-                    setTempX(clamped.x)
-                    setTempY(clamped.y)
+                    setTempScale(formData.avatarScale ?? 1.0)
+                    setTempX(formData.avatarX ?? 0)
+                    setTempY(formData.avatarY ?? 0)
                     setIsCropModalOpen(true)
                   }}
                   className="btn-outline inline-flex items-center gap-2 px-5 py-2.5 text-sm cursor-pointer"
@@ -634,12 +669,15 @@ export default function HeroContent() {
               style={{ touchAction: 'none' }}
             >
               {/* Full image at 50% opacity in the background */}
-              <div className="absolute inset-0 select-none pointer-events-none">
+              <div className="absolute inset-0 select-none pointer-events-none flex items-center justify-center">
                 <img 
                   src={tempAvatar} 
                   alt="Base Preview" 
-                  className="w-full h-full object-cover origin-center opacity-50 select-none pointer-events-none"
+                  className="origin-center opacity-50 select-none pointer-events-none flex-shrink-0"
+                  onLoad={handleImageLoad}
                   style={{
+                    width: imageAR >= 1.0 ? 'auto' : '256px',
+                    height: imageAR >= 1.0 ? '256px' : 'auto',
                     transform: `scale(${tempScale}) translate(${tempX}%, ${tempY}%)`
                   }}
                 />
@@ -647,14 +685,14 @@ export default function HeroContent() {
 
               {/* Highlight circle in the center at 100% opacity */}
               <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                <div className="relative w-48 h-48 rounded-full border-2 border-primary-500 shadow-[0_0_0_9999px_rgba(15,23,42,0.75)] overflow-hidden">
+                <div className="relative w-48 h-48 rounded-full border-2 border-primary-500 shadow-[0_0_0_9999px_rgba(15,23,42,0.75)] overflow-hidden flex items-center justify-center">
                   <img 
                     src={tempAvatar} 
                     alt="Cutout Preview" 
-                    className="absolute w-64 h-64 max-w-none object-cover origin-center select-none pointer-events-none"
+                    className="origin-center select-none pointer-events-none flex-shrink-0"
                     style={{
-                      left: '-32px',
-                      top: '-32px',
+                      width: imageAR >= 1.0 ? 'auto' : '256px',
+                      height: imageAR >= 1.0 ? '256px' : 'auto',
                       transform: `scale(${tempScale}) translate(${tempX}%, ${tempY}%)`
                     }}
                   />
