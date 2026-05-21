@@ -213,7 +213,7 @@ export default function Hero({ heroData }) {
                     alt="Hero Avatar" 
                     className="w-full h-full object-cover origin-center" 
                     style={{
-                      transform: `scale(${heroData.avatarScale ?? 1.0}) translate(${heroData.avatarX ?? 0}px, ${heroData.avatarY ?? 0}px)`
+                      transform: `scale(${heroData.avatarScale ?? 1.0}) translate(${heroData.avatarX ?? 0}%, ${heroData.avatarY ?? 0}%)`
                     }}
                   />
                 ) : (
