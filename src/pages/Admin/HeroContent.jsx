@@ -1,6 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { Save, AlertCircle, Sparkles, Upload, X, Image as ImageIcon } from 'lucide-react'
 
+const getClampedCoords = (scale, x, y) => {
+  const maxOffset = Math.max(0, 50 - 37.5 / scale);
+  return {
+    x: Math.min(Math.max(x, -maxOffset), maxOffset),
+    y: Math.min(Math.max(y, -maxOffset), maxOffset)
+  };
+};
+
 export default function HeroContent() {
   const [isSaving, setIsSaving] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -81,8 +89,20 @@ export default function HeroContent() {
       const deltaX = dx / (2.56 * tempScale);
       const deltaY = dy / (2.56 * tempScale);
       
-      setTempX(offsetStartRef.current.x + deltaX);
-      setTempY(offsetStartRef.current.y + deltaY);
+      const newX = offsetStartRef.current.x + deltaX;
+      const newY = offsetStartRef.current.y + deltaY;
+      
+      const clamped = getClampedCoords(tempScale, newX, newY);
+      setTempX(clamped.x);
+      setTempY(clamped.y);
+      
+      // Prevent sticky boundary / drift
+      const dxEffective = (clamped.x - offsetStartRef.current.x) * (2.56 * tempScale);
+      const dyEffective = (clamped.y - offsetStartRef.current.y) * (2.56 * tempScale);
+      dragStartRef.current = {
+        x: dragStartRef.current.x + (dx - dxEffective),
+        y: dragStartRef.current.y + (dy - dyEffective)
+      };
     } else if (keys.length === 2) {
       const p1 = pointersRef.current[keys[0]];
       const p2 = pointersRef.current[keys[1]];
@@ -103,8 +123,20 @@ export default function HeroContent() {
       const deltaX = dx / (2.56 * newScale);
       const deltaY = dy / (2.56 * newScale);
       
-      setTempX(offsetStartRef.current.x + deltaX);
-      setTempY(offsetStartRef.current.y + deltaY);
+      const newX = offsetStartRef.current.x + deltaX;
+      const newY = offsetStartRef.current.y + deltaY;
+      
+      const clamped = getClampedCoords(newScale, newX, newY);
+      setTempX(clamped.x);
+      setTempY(clamped.y);
+      
+      // Prevent sticky boundary / drift
+      const dxEffective = (clamped.x - offsetStartRef.current.x) * (2.56 * newScale);
+      const dyEffective = (clamped.y - offsetStartRef.current.y) * (2.56 * newScale);
+      initialMidpointRef.current = {
+        x: initialMidpointRef.current.x + (dx - dxEffective),
+        y: initialMidpointRef.current.y + (dy - dyEffective)
+      };
     }
   };
 
@@ -138,6 +170,16 @@ export default function HeroContent() {
       const delta = -e.deltaY * zoomSpeed;
       setTempScale(prev => {
         const newScale = Math.min(Math.max(prev + delta, 1.0), 5.0);
+        
+        setTempX(prevX => {
+          const maxOffset = Math.max(0, 50 - 37.5 / newScale);
+          return Math.min(Math.max(prevX, -maxOffset), maxOffset);
+        });
+        setTempY(prevY => {
+          const maxOffset = Math.max(0, 50 - 37.5 / newScale);
+          return Math.min(Math.max(prevY, -maxOffset), maxOffset);
+        });
+        
         return newScale;
       });
     };
@@ -212,9 +254,11 @@ export default function HeroContent() {
       const reader = new FileReader()
       reader.onloadend = () => {
         setTempAvatar(reader.result)
-        setTempScale(formData.avatarScale ?? 1.0)
-        setTempX(formData.avatarX ?? 0)
-        setTempY(formData.avatarY ?? 0)
+        const scale = formData.avatarScale ?? 1.0;
+        const clamped = getClampedCoords(scale, formData.avatarX ?? 0, formData.avatarY ?? 0);
+        setTempScale(scale)
+        setTempX(clamped.x)
+        setTempY(clamped.y)
         setIsCropModalOpen(true)
       }
       reader.readAsDataURL(file)
@@ -356,9 +400,11 @@ export default function HeroContent() {
                   type="button"
                   onClick={() => {
                     setTempAvatar(formData.avatar)
-                    setTempScale(formData.avatarScale ?? 1.0)
-                    setTempX(formData.avatarX ?? 0)
-                    setTempY(formData.avatarY ?? 0)
+                    const scale = formData.avatarScale ?? 1.0;
+                    const clamped = getClampedCoords(scale, formData.avatarX ?? 0, formData.avatarY ?? 0);
+                    setTempScale(scale)
+                    setTempX(clamped.x)
+                    setTempY(clamped.y)
                     setIsCropModalOpen(true)
                   }}
                   className="btn-outline inline-flex items-center gap-2 px-5 py-2.5 text-sm cursor-pointer"
