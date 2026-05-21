@@ -32,6 +32,123 @@ export default function HeroContent() {
   const [tempX, setTempX] = useState(0)
   const [tempY, setTempY] = useState(0)
 
+  const pointersRef = useRef({})
+  const isDraggingRef = useRef(false)
+  const dragStartRef = useRef({ x: 0, y: 0 })
+  const offsetStartRef = useRef({ x: 0, y: 0 })
+  const initialPinchDistRef = useRef(0)
+  const initialScaleRef = useRef(1.0)
+  const initialMidpointRef = useRef({ x: 0, y: 0 })
+  const containerRef = useRef(null)
+
+  const handlePointerDown = (e) => {
+    e.preventDefault();
+    const target = e.currentTarget;
+    target.setPointerCapture(e.pointerId);
+    
+    pointersRef.current[e.pointerId] = { clientX: e.clientX, clientY: e.clientY };
+    const keys = Object.keys(pointersRef.current);
+    
+    if (keys.length === 1) {
+      isDraggingRef.current = true;
+      dragStartRef.current = { x: e.clientX, y: e.clientY };
+      offsetStartRef.current = { x: tempX, y: tempY };
+    } else if (keys.length === 2) {
+      const p1 = pointersRef.current[keys[0]];
+      const p2 = pointersRef.current[keys[1]];
+      
+      initialPinchDistRef.current = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
+      initialScaleRef.current = tempScale;
+      
+      initialMidpointRef.current = {
+        x: (p1.clientX + p2.clientX) / 2,
+        y: (p1.clientY + p2.clientY) / 2
+      };
+      offsetStartRef.current = { x: tempX, y: tempY };
+    }
+  };
+
+  const handlePointerMove = (e) => {
+    if (!pointersRef.current[e.pointerId]) return;
+    
+    pointersRef.current[e.pointerId] = { clientX: e.clientX, clientY: e.clientY };
+    const keys = Object.keys(pointersRef.current);
+    
+    if (keys.length === 1 && isDraggingRef.current) {
+      const dx = e.clientX - dragStartRef.current.x;
+      const dy = e.clientY - dragStartRef.current.y;
+      
+      const deltaX = dx / (2.56 * tempScale);
+      const deltaY = dy / (2.56 * tempScale);
+      
+      setTempX(offsetStartRef.current.x + deltaX);
+      setTempY(offsetStartRef.current.y + deltaY);
+    } else if (keys.length === 2) {
+      const p1 = pointersRef.current[keys[0]];
+      const p2 = pointersRef.current[keys[1]];
+      
+      const newDist = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
+      const midX = (p1.clientX + p2.clientX) / 2;
+      const midY = (p1.clientY + p2.clientY) / 2;
+      
+      let newScale = tempScale;
+      if (initialPinchDistRef.current > 0) {
+        newScale = initialScaleRef.current * (newDist / initialPinchDistRef.current);
+        newScale = Math.min(Math.max(newScale, 1.0), 5.0);
+        setTempScale(newScale);
+      }
+      
+      const dx = midX - initialMidpointRef.current.x;
+      const dy = midY - initialMidpointRef.current.y;
+      const deltaX = dx / (2.56 * newScale);
+      const deltaY = dy / (2.56 * newScale);
+      
+      setTempX(offsetStartRef.current.x + deltaX);
+      setTempY(offsetStartRef.current.y + deltaY);
+    }
+  };
+
+  const handlePointerUp = (e) => {
+    const target = e.currentTarget;
+    try {
+      target.releasePointerCapture(e.pointerId);
+    } catch (err) {}
+    
+    delete pointersRef.current[e.pointerId];
+    const keys = Object.keys(pointersRef.current);
+    
+    if (keys.length === 0) {
+      isDraggingRef.current = false;
+    } else if (keys.length === 1) {
+      const singlePointer = pointersRef.current[keys[0]];
+      dragStartRef.current = { x: singlePointer.clientX, y: singlePointer.clientY };
+      offsetStartRef.current = { x: tempX, y: tempY };
+      isDraggingRef.current = true;
+    }
+  };
+
+  useEffect(() => {
+    if (!isCropModalOpen) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheel = (e) => {
+      e.preventDefault();
+      const zoomSpeed = 0.003;
+      const delta = -e.deltaY * zoomSpeed;
+      setTempScale(prev => {
+        const newScale = Math.min(Math.max(prev + delta, 1.0), 5.0);
+        return newScale;
+      });
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, [isCropModalOpen]);
+
+
   useEffect(() => {
     fetch('/api/hero')
       .then(res => res.json())
@@ -193,7 +310,7 @@ export default function HeroContent() {
                   alt="Avatar Preview" 
                   className="w-full h-full object-cover origin-center" 
                   style={{
-                    transform: `scale(${formData.avatarScale ?? 1.0}) translate(${formData.avatarX ?? 0}px, ${formData.avatarY ?? 0}px)`
+                    transform: `scale(${formData.avatarScale ?? 1.0}) translate(${formData.avatarX ?? 0}%, ${formData.avatarY ?? 0}%)`
                   }}
                 />
                 <button 
@@ -461,15 +578,23 @@ export default function HeroContent() {
             </div>
 
             {/* Cutout Preview Frame */}
-            <div className="relative w-64 h-64 mx-auto rounded-2xl overflow-hidden bg-zinc-950 flex items-center justify-center border border-subtle shadow-inner">
+            <div 
+              ref={containerRef}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+              className="relative w-64 h-64 mx-auto rounded-2xl overflow-hidden bg-zinc-950 flex items-center justify-center border border-subtle shadow-inner select-none cursor-grab active:cursor-grabbing"
+              style={{ touchAction: 'none' }}
+            >
               {/* Full image at 50% opacity in the background */}
               <div className="absolute inset-0 select-none pointer-events-none">
                 <img 
                   src={tempAvatar} 
                   alt="Base Preview" 
-                  className="w-full h-full object-cover origin-center opacity-50"
+                  className="w-full h-full object-cover origin-center opacity-50 select-none pointer-events-none"
                   style={{
-                    transform: `scale(${tempScale}) translate(${tempX}px, ${tempY}px)`
+                    transform: `scale(${tempScale}) translate(${tempX}%, ${tempY}%)`
                   }}
                 />
               </div>
@@ -480,9 +605,9 @@ export default function HeroContent() {
                   <img 
                     src={tempAvatar} 
                     alt="Cutout Preview" 
-                    className="w-64 h-64 max-w-none object-cover origin-center"
+                    className="w-64 h-64 max-w-none object-cover origin-center select-none pointer-events-none"
                     style={{
-                      transform: `scale(${tempScale}) translate(${tempX}px, ${tempY}px)`
+                      transform: `scale(${tempScale}) translate(${tempX}%, ${tempY}%)`
                     }}
                   />
                 </div>
@@ -490,9 +615,9 @@ export default function HeroContent() {
             </div>
 
             {/* Adjustments Section */}
-            <div className="w-full space-y-4 pt-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Position Settings</span>
+            <div className="w-full space-y-3 pt-2">
+              <div className="flex items-center justify-between border-b border-subtle pb-2 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Adjust Position</span>
                 <button 
                   type="button" 
                   onClick={() => { setTempScale(1.0); setTempX(0); setTempY(0); }}
@@ -502,57 +627,13 @@ export default function HeroContent() {
                 </button>
               </div>
               
-              <div className="space-y-4">
-                {/* Zoom / Scale */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                    <span>Zoom / Scale</span>
-                    <span className="font-mono text-primary-400">{tempScale.toFixed(2)}x</span>
-                  </div>
-                  <input 
-                    type="range"
-                    min="1.0"
-                    max="4.0"
-                    step="0.05"
-                    value={tempScale}
-                    onChange={(e) => setTempScale(parseFloat(e.target.value))}
-                    className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-500"
-                  />
-                </div>
-
-                {/* X Shift */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                    <span>Horizontal (X Offset)</span>
-                    <span className="font-mono text-primary-400">{tempX}px</span>
-                  </div>
-                  <input 
-                    type="range"
-                    min="-200"
-                    max="200"
-                    step="1"
-                    value={tempX}
-                    onChange={(e) => setTempX(parseInt(e.target.value))}
-                    className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-500"
-                  />
-                </div>
-
-                {/* Y Shift */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                    <span>Vertical (Y Offset)</span>
-                    <span className="font-mono text-primary-400">{tempY}px</span>
-                  </div>
-                  <input 
-                    type="range"
-                    min="-200"
-                    max="200"
-                    step="1"
-                    value={tempY}
-                    onChange={(e) => setTempY(parseInt(e.target.value))}
-                    className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-500"
-                  />
-                </div>
+              <div className="text-center py-3 px-4 rounded-xl glass border border-subtle">
+                <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  Drag photo to reposition
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-faint)' }}>
+                  Scroll mouse wheel or pinch to zoom ({tempScale.toFixed(2)}x)
+                </p>
               </div>
             </div>
 
@@ -575,8 +656,8 @@ export default function HeroContent() {
                     ...prev,
                     avatar: tempAvatar,
                     avatarScale: tempScale,
-                    avatarX: tempX,
-                    avatarY: tempY
+                    avatarX: Math.round(tempX),
+                    avatarY: Math.round(tempY)
                   }));
                   setIsCropModalOpen(false);
                   if (fileInputRef.current) fileInputRef.current.value = '';
