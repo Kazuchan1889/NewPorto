@@ -601,12 +601,14 @@ export default function HeroContent() {
 
               {/* Highlight circle in the center at 100% opacity */}
               <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                <div className="w-48 h-48 rounded-full border-2 border-primary-500 shadow-[0_0_0_9999px_rgba(15,23,42,0.75)] overflow-hidden flex items-center justify-center">
+                <div className="relative w-48 h-48 rounded-full border-2 border-primary-500 shadow-[0_0_0_9999px_rgba(15,23,42,0.75)] overflow-hidden">
                   <img 
                     src={tempAvatar} 
                     alt="Cutout Preview" 
-                    className="w-64 h-64 max-w-none object-cover origin-center select-none pointer-events-none"
+                    className="absolute w-64 h-64 max-w-none object-cover origin-center select-none pointer-events-none"
                     style={{
+                      left: '-32px',
+                      top: '-32px',
                       transform: `scale(${tempScale}) translate(${tempX}%, ${tempY}%)`
                     }}
                   />
