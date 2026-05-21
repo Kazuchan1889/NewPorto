@@ -64,7 +64,7 @@ export default function ContactSettings() {
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Contact Settings</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>

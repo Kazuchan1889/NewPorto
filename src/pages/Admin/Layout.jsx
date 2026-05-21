@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, User, Code2, Briefcase, Mail, LogOut, Moon, Sun, Settings } from 'lucide-react'
+import { LayoutDashboard, User, Code2, Briefcase, Mail, LogOut, Moon, Sun, Settings, Menu, X } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
 
 const menuItems = [
@@ -15,21 +16,63 @@ const menuItems = [
 export default function AdminLayout() {
   const { pathname } = useLocation()
   const { isDark, toggle } = useTheme()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [pathname])
+
+  // Prevent body scroll when sidebar overlay is open
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [sidebarOpen])
+
+  const currentLabel = menuItems.find(m => m.path === pathname)?.label || 'Admin Panel'
 
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
-      {/* Sidebar */}
-      <aside className="w-64 border-r flex flex-col" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-surface)' }}>
-        <div className="p-6">
+
+      {/* ── Mobile Overlay Backdrop ─────────────────────────── */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* ── Sidebar ─────────────────────────────────────────── */}
+      <aside
+        className={`fixed md:relative inset-y-0 left-0 z-50 w-64 flex flex-col border-r transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+        style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-surface)' }}
+      >
+        {/* Sidebar Header */}
+        <div className="p-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center font-bold text-white text-xs">
               YN
             </div>
             <span className="font-bold tracking-tight">Admin CMS</span>
           </Link>
+          {/* Close button (mobile only) */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="md:hidden w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+            aria-label="Close sidebar"
+          >
+            <X size={18} />
+          </button>
         </div>
 
-        <nav className="flex-1 px-4 py-4 space-y-1">
+        {/* Nav Links */}
+        <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
           {menuItems.map(({ label, path, icon: Icon }) => {
             const active = pathname === path
             return (
@@ -48,6 +91,7 @@ export default function AdminLayout() {
           })}
         </nav>
 
+        {/* Sidebar Footer */}
         <div className="p-4 border-t space-y-2" style={{ borderColor: 'var(--border-subtle)' }}>
           <button
             onClick={toggle}
@@ -67,14 +111,29 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-y-auto">
-        <header className="h-16 border-b flex items-center px-8" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-surface)' }}>
-          <h1 className="font-semibold" style={{ color: 'var(--text-primary)' }}>
-            {menuItems.find(m => m.path === pathname)?.label || 'Admin Panel'}
+      {/* ── Main Content ────────────────────────────────────── */}
+      <main className="flex-1 flex flex-col min-h-screen overflow-y-auto min-w-0">
+        {/* Top Header Bar */}
+        <header
+          className="h-16 border-b flex items-center px-4 md:px-8 gap-4 sticky top-0 z-30"
+          style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-surface)' }}
+        >
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="md:hidden w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 card border-subtle"
+            style={{ color: 'var(--text-muted)' }}
+            aria-label="Open sidebar"
+          >
+            <Menu size={18} />
+          </button>
+          <h1 className="font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+            {currentLabel}
           </h1>
         </header>
-        <div className="p-8 flex-1">
+
+        {/* Page Content */}
+        <div className="p-4 md:p-8 flex-1">
           <Outlet />
         </div>
       </main>

@@ -208,7 +208,7 @@ export default function ProjectsContent() {
 
       {/* Projects List */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between mb-4 px-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 px-2">
           <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Projects Management</h2>
           <button 
             onClick={addProject}
@@ -386,7 +386,7 @@ export default function ProjectsContent() {
       </div>
 
       {/* Floating Save Bar */}
-      <div className="fixed bottom-8 right-8 z-50">
+      <div className="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50">
         <button
           onClick={handleSave}
           disabled={isSaving}

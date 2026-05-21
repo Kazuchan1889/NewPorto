@@ -93,7 +93,7 @@ export default function About({ aboutData }) {
           </div>
 
           {/* Right – highlight cards */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {(aboutData?.highlights?.length > 0 ? aboutData.highlights : defaultHighlights).map((item, i) => {
               const icons = [Code2, Rocket, Users, Coffee]
               const Icon = item.icon || icons[i % icons.length]
@@ -121,22 +121,39 @@ export default function About({ aboutData }) {
             My Journey
           </h3>
           <div className="relative">
-            <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px"
+            {/* Center line — desktop only */}
+            <div className="hidden md:block absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px"
                  style={{ background: 'linear-gradient(to bottom, rgba(97,114,240,0.5), transparent)' }} />
             {(aboutData?.timeline?.length > 0 ? aboutData.timeline : defaultTimeline).map((item, i) => {
               const side = i % 2 === 0 ? 'left' : 'right'
               return (
-                <div key={item.id || item.year} className={`flex items-center gap-6 mb-8 ${side === 'right' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`flex-1 ${side === 'left' ? 'text-right' : 'text-left'}`}>
-                    <div className={`card rounded-xl p-4 border-subtle inline-block hover:border-brand transition-all duration-300 text-left ${side === 'left' ? 'md:mr-8' : 'md:ml-8'}`}>
-                      <p className="font-mono text-sm mb-1" style={{ color: 'var(--primary-400)' }}>{item.year}</p>
-                      <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{item.title || item.role}</p>
-                      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{item.company}</p>
+                <div key={item.id || item.year}>
+                  {/* Mobile: simple vertical list */}
+                  <div className={`flex md:hidden items-start gap-4 mb-6`}>
+                    <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                      <div className="w-3 h-3 rounded-full bg-primary-500 glow flex-shrink-0 mt-1" />
+                      <div className="w-px flex-1 min-h-[32px]" style={{ background: 'rgba(97,114,240,0.25)' }} />
+                    </div>
+                    <div className="card rounded-xl p-4 border-subtle flex-1 text-left">
+                      <p className="font-mono text-xs mb-1" style={{ color: 'var(--primary-400)' }}>{item.year}</p>
+                      <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{item.title || item.role}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{item.company}</p>
                     </div>
                   </div>
-                  <div className="relative z-10 w-4 h-4 rounded-full bg-primary-500 border-2 flex-shrink-0 glow"
-                       style={{ borderColor: 'var(--bg-base)' }} />
-                  <div className="flex-1" />
+
+                  {/* Desktop: alternating left/right layout */}
+                  <div className={`hidden md:flex items-center gap-6 mb-8 ${side === 'right' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`flex-1 ${side === 'left' ? 'text-right' : 'text-left'}`}>
+                      <div className={`card rounded-xl p-4 border-subtle inline-block hover:border-brand transition-all duration-300 text-left ${side === 'left' ? 'md:mr-8' : 'md:ml-8'}`}>
+                        <p className="font-mono text-sm mb-1" style={{ color: 'var(--primary-400)' }}>{item.year}</p>
+                        <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{item.title || item.role}</p>
+                        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{item.company}</p>
+                      </div>
+                    </div>
+                    <div className="relative z-10 w-4 h-4 rounded-full bg-primary-500 border-2 flex-shrink-0 glow"
+                         style={{ borderColor: 'var(--bg-base)' }} />
+                    <div className="flex-1" />
+                  </div>
                 </div>
               )
             })}

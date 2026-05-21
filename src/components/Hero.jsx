@@ -107,7 +107,7 @@ export default function Hero({ heroData }) {
             {/* Heading */}
             <div className="space-y-2">
               <p className="font-mono text-sm tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>Hello, I'm</p>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black leading-tight tracking-tight">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight tracking-tight">
                 <span style={{ color: 'var(--text-primary)' }}>
                   {heroData?.name ? heroData.name.split(' ')[0] + ' ' : 'Your '}
                 </span>
@@ -195,7 +195,7 @@ export default function Hero({ heroData }) {
             </div>
 
             {/* Stats */}
-            <div className="flex gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full">
               {(heroData?.stats && heroData.stats.length > 0 ? heroData.stats : [
                 { value: '3+',  label: 'Years Exp.' },
                 { value: '20+', label: 'Projects' },

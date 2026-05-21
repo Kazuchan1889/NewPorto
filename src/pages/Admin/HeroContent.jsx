@@ -364,7 +364,7 @@ export default function HeroContent() {
           These 3 stats appear floating around your avatar in the hero section.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {formData.stats.map((stat, i) => (
             <div key={stat.id} className="p-4 rounded-xl border border-subtle bg-black/5 dark:bg-white/5 space-y-4">
               <div className="text-xs font-bold text-center" style={{ color: 'var(--text-muted)' }}>STAT {i + 1}</div>
@@ -390,7 +390,7 @@ export default function HeroContent() {
       </div>
 
       {/* Floating Save Bar */}
-      <div className="fixed bottom-8 right-8 z-50">
+      <div className="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50">
         <button
           onClick={handleSave}
           disabled={isSaving}
