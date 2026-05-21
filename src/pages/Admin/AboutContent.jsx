@@ -37,7 +37,9 @@ export default function AboutContent() {
             bio3: data.bio3 || '',
             resumeUrl: data.resumeUrl || '',
             highlights: data.highlights && data.highlights.length > 0 ? data.highlights.map(h => ({ id: h.id, label: h.title, desc: h.description })) : prev.highlights,
-            timeline: data.timeline && data.timeline.length > 0 ? data.timeline : prev.timeline
+            timeline: data.timeline && data.timeline.length > 0
+              ? data.timeline.map(t => ({ id: t.id, year: t.year || '', title: t.role || t.title || '', company: t.company || '' }))
+              : prev.timeline
           }))
         }
         setIsLoading(false)
@@ -108,7 +110,8 @@ export default function AboutContent() {
     try {
       const payload = {
         ...formData,
-        highlights: formData.highlights.map(h => ({ title: h.label, description: h.desc }))
+        highlights: formData.highlights.map(h => ({ title: h.label, description: h.desc })),
+        timeline: formData.timeline.map(t => ({ year: t.year, role: t.title, company: t.company }))
       }
       const res = await fetch('/api/about', {
         method: 'POST',

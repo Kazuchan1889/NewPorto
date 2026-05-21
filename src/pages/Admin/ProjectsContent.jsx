@@ -42,7 +42,9 @@ export default function ProjectsContent() {
             ...prev,
             heading: data.heading || prev.heading,
             description: data.description || prev.description,
-            projects: data.projects && data.projects.length > 0 ? data.projects : prev.projects
+            projects: data.projects && data.projects.length > 0
+              ? data.projects.map(p => ({ ...p, tags: Array.isArray(p.tags) ? p.tags : [] }))
+              : prev.projects
           }))
         }
         setIsLoading(false)

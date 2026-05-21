@@ -22,12 +22,50 @@ export default function Navbar() {
   const location = useLocation()
   const isHome = location.pathname === '/'
 
+  const [logoClicks, setLogoClicks] = useState(0)
+  const [lastClickTime, setLastClickTime] = useState(0)
+
   useEffect(() => {
     fetch('/api/hero')
       .then(res => res.json())
       .then(data => setHeroData(data))
       .catch(err => console.error(err))
   }, [])
+
+  // Keyboard shortcut listener to access admin view secretly: typing "admin"
+  useEffect(() => {
+    let keys = []
+    const secretCode = 'admin'
+    const onKeyDown = (e) => {
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+        return
+      }
+      keys.push(e.key.toLowerCase())
+      keys = keys.slice(-secretCode.length)
+      if (keys.join('') === secretCode) {
+        navigate('/admin')
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [navigate])
+
+  const handleLogoClick = () => {
+    const now = Date.now()
+    if (now - lastClickTime < 1000) {
+      const newClicks = logoClicks + 1
+      setLogoClicks(newClicks)
+      if (newClicks >= 5) {
+        navigate('/admin')
+        setLogoClicks(0)
+        return
+      }
+    } else {
+      setLogoClicks(1)
+    }
+    setLastClickTime(now)
+    handleNavClick('home')
+  }
 
   /* ── Track which section is in view ───────────────────────── */
   useEffect(() => {
@@ -81,7 +119,7 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
 
         {/* ── Logo ─────────────────────────────────────────── */}
-        <button onClick={() => handleNavClick('home')} className="flex items-center gap-2.5 group">
+        <button onClick={handleLogoClick} className="flex items-center gap-2.5 group">
           <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center font-bold text-white text-sm group-hover:scale-110 transition-transform duration-300">
             {heroData?.logoUrl ? (
               <img src={heroData.logoUrl} alt="Logo" className="w-full h-full object-cover scale-[1.15] origin-center" />
@@ -148,10 +186,6 @@ export default function Navbar() {
             <Sun  size={12} className={`absolute left-2 transition-opacity duration-300 ${isDark ? 'opacity-0' : 'text-accent-400 opacity-100'}`} />
             <Moon size={12} className={`absolute right-2 transition-opacity duration-300 ${isDark ? 'text-primary-200 opacity-100' : 'opacity-0'}`} />
           </button>
-
-          <button onClick={() => navigate('/admin')} className="btn-outline text-sm py-2.5 px-4" style={{ padding: '8px 16px', borderRadius: '8px', borderWidth: '1px' }}>
-            Admin CMS
-          </button>
           
           <button onClick={() => handleNavClick('contact')} className="btn-primary text-sm py-2.5 px-6">
             Hire Me
@@ -160,9 +194,6 @@ export default function Navbar() {
 
         {/* ── Mobile: theme + hamburger ─────────────────────── */}
         <div className="md:hidden flex items-center gap-3">
-          <button onClick={() => navigate('/admin')} className="text-xs font-semibold px-3 py-1.5 rounded-lg border-subtle border" style={{ color: 'var(--text-muted)' }}>
-            CMS
-          </button>
           <button
             onClick={toggle}
             aria-label="Toggle theme"

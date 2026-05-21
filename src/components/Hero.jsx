@@ -51,8 +51,20 @@ export default function Hero({ heroData }) {
         ctx.fillStyle = `rgba(${dotColor},${p.alpha})`
         ctx.fill()
         p.x += p.dx; p.y += p.dy
-        if (p.x < 0 || p.x > canvas.width)  p.dx *= -1
-        if (p.y < 0 || p.y > canvas.height) p.dy *= -1
+        if (p.x < 0) {
+          p.x = 0
+          p.dx = Math.abs(p.dx)
+        } else if (p.x > canvas.width) {
+          p.x = canvas.width
+          p.dx = -Math.abs(p.dx)
+        }
+        if (p.y < 0) {
+          p.y = 0
+          p.dy = Math.abs(p.dy)
+        } else if (p.y > canvas.height) {
+          p.y = canvas.height
+          p.dy = -Math.abs(p.dy)
+        }
       })
 
       for (let i = 0; i < particles.length; i++) {
@@ -118,11 +130,32 @@ export default function Hero({ heroData }) {
               <div className="flex items-center gap-3">
                 <div className="h-px w-12 bg-gradient-to-r from-primary-500 to-transparent" />
                 <p className="text-xl md:text-2xl font-light" style={{ color: 'var(--text-secondary)' }}>
-                  {heroData?.title?.split(' ').slice(0, -1).join(' ') || 'Full Stack'} 
-                  {' '}
-                  <span className="font-semibold" style={{ color: 'var(--primary-400)' }}>
-                    {heroData?.title?.split(' ').slice(-1)[0] || 'Developer'}
-                  </span>
+                  {(() => {
+                    if (!heroData?.title) return (
+                      <>
+                        Full Stack{' '}
+                        <span className="font-semibold" style={{ color: 'var(--primary-400)' }}>
+                          Developer
+                        </span>
+                      </>
+                    )
+                    const words = heroData.title.trim().split(/\s+/)
+                    if (words.length <= 1) {
+                      return (
+                        <span className="font-semibold" style={{ color: 'var(--primary-400)' }}>
+                          {words[0] || ''}
+                        </span>
+                      )
+                    }
+                    return (
+                      <>
+                        {words.slice(0, -1).join(' ')}{' '}
+                        <span className="font-semibold" style={{ color: 'var(--primary-400)' }}>
+                          {words[words.length - 1]}
+                        </span>
+                      </>
+                    )
+                  })()}
                 </p>
               </div>
             </div>

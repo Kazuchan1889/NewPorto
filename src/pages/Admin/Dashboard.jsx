@@ -2,6 +2,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Eye, MousePointerClick, MessageSquare, TrendingUp } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 const trafficData = [
   { name: 'Mon', views: 400, clicks: 240 },
@@ -124,9 +125,9 @@ export default function AdminDashboard() {
               ))
             )}
           </div>
-          <a href="/admin/contact" className="w-full mt-4 py-2.5 rounded-xl border-subtle border text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-center block" style={{ color: 'var(--text-primary)' }}>
+          <Link to="/admin/contact" className="w-full mt-4 py-2.5 rounded-xl border-subtle border text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-center block" style={{ color: 'var(--text-primary)' }}>
             View All Messages
-          </a>
+          </Link>
         </div>
       </div>
     </div>
