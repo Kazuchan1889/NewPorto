@@ -127,7 +127,7 @@ export default function About({ aboutData }) {
               const side = i % 2 === 0 ? 'left' : 'right'
               return (
                 <div key={item.id || item.year} className={`flex items-center gap-6 mb-8 ${side === 'right' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`flex-1 ${side === 'right' ? 'text-right' : ''}`}>
+                  <div className={`flex-1 flex ${side === 'left' ? 'justify-end md:pr-8' : 'justify-start md:pl-8'}`}>
                     <div className="card rounded-xl p-4 border-subtle inline-block hover:border-brand transition-all duration-300">
                       <p className="font-mono text-sm mb-1" style={{ color: 'var(--primary-400)' }}>{item.year}</p>
                       <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{item.title || item.role}</p>
