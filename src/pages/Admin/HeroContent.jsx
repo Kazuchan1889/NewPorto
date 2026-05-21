@@ -26,6 +26,12 @@ export default function HeroContent() {
     ]
   })
 
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false)
+  const [tempAvatar, setTempAvatar] = useState(null)
+  const [tempScale, setTempScale] = useState(1.0)
+  const [tempX, setTempX] = useState(0)
+  const [tempY, setTempY] = useState(0)
+
   useEffect(() => {
     fetch('/api/hero')
       .then(res => res.json())
@@ -88,7 +94,11 @@ export default function HeroContent() {
       }
       const reader = new FileReader()
       reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, avatar: reader.result }))
+        setTempAvatar(reader.result)
+        setTempScale(formData.avatarScale ?? 1.0)
+        setTempX(formData.avatarX ?? 0)
+        setTempY(formData.avatarY ?? 0)
+        setIsCropModalOpen(true)
       }
       reader.readAsDataURL(file)
     }
@@ -207,7 +217,7 @@ export default function HeroContent() {
             <p className="text-sm leading-relaxed max-w-sm mx-auto sm:mx-0" style={{ color: 'var(--text-muted)' }}>
               Recommended size: 500x500px. Supports PNG and JPG/JPEG only. Transparent backgrounds look best on dark mode.
             </p>
-            <div className="pt-2">
+            <div className="pt-2 flex items-center justify-center sm:justify-start gap-3">
               <input 
                 type="file" 
                 ref={fileInputRef}
@@ -223,76 +233,26 @@ export default function HeroContent() {
                 <Upload size={16} />
                 Choose File
               </label>
+
+              {formData.avatar && (
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setTempAvatar(formData.avatar)
+                    setTempScale(formData.avatarScale ?? 1.0)
+                    setTempX(formData.avatarX ?? 0)
+                    setTempY(formData.avatarY ?? 0)
+                    setIsCropModalOpen(true)
+                  }}
+                  className="btn-outline inline-flex items-center gap-2 px-5 py-2.5 text-sm cursor-pointer"
+                >
+                  <Sparkles size={16} />
+                  Adjust Position
+                </button>
+              )}
             </div>
           </div>
         </div>
-
-        {formData.avatar && (
-          <div className="pt-6 border-t border-subtle space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Position & Zoom Adjustments</h3>
-              <button 
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, avatarScale: 1.0, avatarX: 0, avatarY: 0 }))}
-                className="text-xs font-semibold text-primary-400 hover:text-primary-300 transition-colors"
-              >
-                Reset Adjustments
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Zoom Slider */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                  <span>Zoom / Scale</span>
-                  <span className="font-mono text-primary-400">{(formData.avatarScale ?? 1.0).toFixed(2)}x</span>
-                </div>
-                <input 
-                  type="range"
-                  min="1.0"
-                  max="4.0"
-                  step="0.05"
-                  value={formData.avatarScale ?? 1.0}
-                  onChange={(e) => setFormData(prev => ({ ...prev, avatarScale: parseFloat(e.target.value) }))}
-                  className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-500"
-                />
-              </div>
-
-              {/* X Shift Slider */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                  <span>Horizontal (X Shift)</span>
-                  <span className="font-mono text-primary-400">{formData.avatarX ?? 0}px</span>
-                </div>
-                <input 
-                  type="range"
-                  min="-200"
-                  max="200"
-                  step="1"
-                  value={formData.avatarX ?? 0}
-                  onChange={(e) => setFormData(prev => ({ ...prev, avatarX: parseInt(e.target.value) }))}
-                  className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-500"
-                />
-              </div>
-
-              {/* Y Shift Slider */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                  <span>Vertical (Y Shift)</span>
-                  <span className="font-mono text-primary-400">{formData.avatarY ?? 0}px</span>
-                </div>
-                <input 
-                  type="range"
-                  min="-200"
-                  max="200"
-                  step="1"
-                  value={formData.avatarY ?? 0}
-                  onChange={(e) => setFormData(prev => ({ ...prev, avatarY: parseInt(e.target.value) }))}
-                  className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-500"
-                />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Website Icon / Logo */}
@@ -487,6 +447,149 @@ export default function HeroContent() {
           {isSaving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
+
+      {/* Crop & Positioning Modal */}
+      {isCropModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="card max-w-md w-full rounded-2xl border-subtle p-6 space-y-6 bg-dark-900/95 shadow-2xl relative flex flex-col items-center">
+            
+            <div className="w-full text-center">
+              <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Crop & Position Photo</h3>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                Align the photo within the bright circular cutout. The outer area will be cropped out.
+              </p>
+            </div>
+
+            {/* Cutout Preview Frame */}
+            <div className="relative w-64 h-64 mx-auto rounded-2xl overflow-hidden bg-zinc-950 flex items-center justify-center border border-subtle shadow-inner">
+              {/* Full image at 50% opacity in the background */}
+              <div className="absolute inset-0 select-none pointer-events-none">
+                <img 
+                  src={tempAvatar} 
+                  alt="Base Preview" 
+                  className="w-full h-full object-cover origin-center opacity-50"
+                  style={{
+                    transform: `scale(${tempScale}) translate(${tempX}px, ${tempY}px)`
+                  }}
+                />
+              </div>
+
+              {/* Highlight circle in the center at 100% opacity */}
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div className="w-48 h-48 rounded-full border-2 border-primary-500 shadow-[0_0_0_9999px_rgba(15,23,42,0.75)] overflow-hidden flex items-center justify-center">
+                  <img 
+                    src={tempAvatar} 
+                    alt="Cutout Preview" 
+                    className="w-64 h-64 max-w-none object-cover origin-center"
+                    style={{
+                      transform: `scale(${tempScale}) translate(${tempX}px, ${tempY}px)`
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Adjustments Section */}
+            <div className="w-full space-y-4 pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Position Settings</span>
+                <button 
+                  type="button" 
+                  onClick={() => { setTempScale(1.0); setTempX(0); setTempY(0); }}
+                  className="text-xs font-semibold text-primary-400 hover:text-primary-300 transition-colors"
+                >
+                  Reset Position
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {/* Zoom / Scale */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                    <span>Zoom / Scale</span>
+                    <span className="font-mono text-primary-400">{tempScale.toFixed(2)}x</span>
+                  </div>
+                  <input 
+                    type="range"
+                    min="1.0"
+                    max="4.0"
+                    step="0.05"
+                    value={tempScale}
+                    onChange={(e) => setTempScale(parseFloat(e.target.value))}
+                    className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                  />
+                </div>
+
+                {/* X Shift */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                    <span>Horizontal (X Offset)</span>
+                    <span className="font-mono text-primary-400">{tempX}px</span>
+                  </div>
+                  <input 
+                    type="range"
+                    min="-200"
+                    max="200"
+                    step="1"
+                    value={tempX}
+                    onChange={(e) => setTempX(parseInt(e.target.value))}
+                    className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                  />
+                </div>
+
+                {/* Y Shift */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                    <span>Vertical (Y Offset)</span>
+                    <span className="font-mono text-primary-400">{tempY}px</span>
+                  </div>
+                  <input 
+                    type="range"
+                    min="-200"
+                    max="200"
+                    step="1"
+                    value={tempY}
+                    onChange={(e) => setTempY(parseInt(e.target.value))}
+                    className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-3 w-full pt-4 border-t border-subtle">
+              <button 
+                type="button"
+                onClick={() => {
+                  setIsCropModalOpen(false);
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+                className="btn-outline px-5 py-2.5 text-sm"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                onClick={() => {
+                  setFormData(prev => ({
+                    ...prev,
+                    avatar: tempAvatar,
+                    avatarScale: tempScale,
+                    avatarX: tempX,
+                    avatarY: tempY
+                  }));
+                  setIsCropModalOpen(false);
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+                className="btn-primary px-6 py-2.5 text-sm"
+              >
+                Save Photo
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   )
